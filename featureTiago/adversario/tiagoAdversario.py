@@ -22,6 +22,7 @@ import torch.optim as optim
 from art.estimators.classification import TensorFlowV2Classifier
 from tqdm import tqdm
 from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
 
 tf.compat.v1.disable_eager_execution()
 #tf.config.run_functions_eagerly(True)
@@ -47,7 +48,7 @@ def treinar_rede(train_x, train_y):
     modelo.fit(train_x, train_y, epochs=10,batch_size=64,shuffle = True,validation_split=0.1)
 
     # Salvar o modelo treinado
-    modelo.save('IoT_modelo_treinadoBalanceado.h5')
+    modelo.save('todoMundo.h5')
     return modelo
 
 
@@ -81,13 +82,12 @@ def treinar_redeTiago(train_x, train_y):
                    metrics=['accuracy'])
 
     print(modelito.summary())
-    exit()
     
     # Training the model
-    modelito.fit(train_x, train_y, epochs=150, batch_size=1024, shuffle=True, validation_split=0.1, callbacks=[early_stopping_callback])
+    modelito.fit(train_x, train_y, epochs=10, batch_size=1024, shuffle=True, validation_split=0.1, callbacks=[early_stopping_callback])
 
     # Saving the trained model
-    modelito.save('IoT_modelo_treinadoBalanceadoThiago.h5')
+    modelito.save('todoMundoThiago.h5')
     return modelito
 
 #Scan-1.csv(device_mac,label) + timeseries.csv(device_mac)
@@ -99,10 +99,15 @@ csv_teste = sys.argv[2]
 df1 = pd.read_csv(arquivo_csv, index_col = 0, low_memory=False)
 #print(df1)
 #df1 = pd.read_csv(arquivo_csv, index_col = 0, low_memory=False, nrows = 123658)
-df2 = pd.read_csv(csv_teste, low_memory=False, index_col = 0)
+df2 = pd.read_csv(csv_teste, low_memory=False)
+
+df3 = pd.read_csv("./fgsm/labels.csv", low_memory=False)
+print(df3)
+
+exit()
 
 #df2 = df2[df2['device_mac'] != 'ff:ff:ff:ff:ff:ff']
-df2 = df2.drop(['label','Flow'],	axis = 1)
+#df2 = df2.drop(['label','Flow'],	axis = 1)
 #df2 = df2.drop(['device_mac'], axis = 1)
 #print(df2)
 
@@ -115,7 +120,6 @@ y = df1['label']  # seleciona rotulos "primeira linha do csv"
 le = preprocessing.LabelEncoder()
 train_y = le.fit_transform(y)
 print(train_y)
-
 
 oversample = RandomOverSampler(sampling_strategy='not majority', random_state = 42)    
 under_sampling = RandomUnderSampler(sampling_strategy='not minority', random_state = 42)
@@ -142,8 +146,8 @@ elif train_again == 2:
 
 else:
     # Carregar o modelo treinado
-    modelo = load_model('IoT_modelo_treinadoBalanceado.h5')
-    modelito =  load_model('IoT_modelo_treinadoBalanceadoThiago.h5')
+    #modelo = load_model('todoMundo.h5')
+    modelito =  load_model('todoMundoThiago.h5')
     print('\n### -- Modelo carregado -- ###\n')
 
 print("########### -----  Amostras Originais  ----- ###########")
@@ -165,31 +169,23 @@ model.compile(optimizer='adam',
                loss='binary_crossentropy',
                metrics=['accuracy'])
 
-
+'''
 art_classifier = KerasClassifier(model=modelo, use_logits=False) 
 
 attack = FastGradientMethod(estimator=art_classifier, eps=0.5) ## eps = 0.2
 print("########### -----  Amostras FGSM  ----- ###########")
 x_test_fgsm = attack.generate(x=df2.values)
 print(x_test_fgsm)
-
-#attackjsma = SaliencyMapMethod(classifier=art_classifier, theta=0.05, gamma=0.02, batch_size=1,verbose=True)
-#print("Starting to Generate JSMA")
-#x_test_jsma = attackjsma.generate(x=df2.values)
-#print(x_test_jsma)
-
-#print("Starting to Generate PGD")
-#attack_pgd = ProjectedGradientDescent(estimator=art_classifier)
-#x_test_cw2 = attack_pgd.generate(x=df2.values, verbose = 0)
-#print(x_test_cw2)
-
+'''
 #y_prob_treino = modelo.predict(train_x)
 #y_pred_treino = y_prob_treino.argmax(axis=-1)
 #acuracia_treino = accuracy_score(train_y, y_pred_treino)
 #print("Acurácia do modelo nos dados de treinamento:", acuracia_treino)
 #print('\n')
 
-probabilidades = modelito.predict(x_test_fgsm)
+print("predizendo.....")
+
+probabilidades = modelito.predict(df2)
 #probabilidades = classifier.predict(df2.values)
 #probabilidades = modelito.predict(df2)
 print(df2.shape)
@@ -219,3 +215,28 @@ print("[Taxa Verdadeiro positivo] Proporção de amostras classificadas como ata
 print("[Taxa Falso Negativo] Proporção de amostras classificadas como tráfego normal:", proporcao_normal)
 print("\n")
 
+
+######################### previsões com os rotulos #################
+
+# Fazendo previsões no conjunto de teste
+y_pred = probabilidades
+y_pred_classes = y_pred.argmax(axis=-1)
+y_test_classes = df3.values.argmax(axis=-1)
+
+# Calculando as métricas
+accuracy = accuracy_score(y_test_classes, y_pred_classes)
+precision = precision_score(y_test_classes, y_pred_classes, average='weighted')
+recall = recall_score(y_test_classes, y_pred_classes, average='weighted')
+f1 = f1_score(y_test_classes, y_pred_classes, average='weighted')
+
+# Imprimindo as métricas
+print(f'Acurácia: {accuracy}')
+print(f'Precisão: {precision}')
+print(f'Recall: {recall}')
+print(f'F1-score: {f1}')
+
+vetor = y_test_classes.unique()
+
+# Relatório de Classificação detalhado
+print('\nRelatório de Classificação:')
+print(classification_report(y_test_classes, y_pred_classes, target_names=vetor))
