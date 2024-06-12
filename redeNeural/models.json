@@ -1,0 +1,29 @@
+[
+   {
+      "Num of conv layer in block": 1,
+      "Conv_Activations": "elu",
+      "Conv_Batch normalization": "yes",
+      "Conv_Batch normalization place": "after activation",
+      "Conv padding": "same",
+      "Conv_MaxPooling1D": "yes",
+      "Conv_MaxPooling1D padding": "same",
+      "Conv_Dropout": "yes",
+      "Num of blocks": 4,
+      "Conv_Filter_num": [32, 64, 128, 256, 128, 128, 256, 256],
+      "Conv_Kernel_size": [4, 4, 8, 8, 8, 8, 8, 8],
+      "Conv_stride_size": [1, 1, 1, 1, 1, 1, 1, 1],
+      "Pool_stride_size": [2, 2, 2, 2, 4, 4, 4, 4],
+      "Pool_size": [8, 8, 8, 8, 8, 8, 8, 8],
+      "Conv_Dropout rate": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
+      "Optimization": "Adam",
+      "Learning rate": 0.001,
+      "Batch size": 64,
+      "Num of fully connected layers": 2,
+      "FC_Num of neurons in hidden layers": [512, 512],
+      "FC_Dropout": "yes",
+      "FC_Dropout rate": [0.5, 0.5],
+      "FC_Activations": "relu",
+      "FC_Batch normalization": "yes",
+      "FC_Batch normalization place": "before activation"
+   }
+]
