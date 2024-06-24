@@ -3,17 +3,17 @@ import sys
 
 arquivo_csv = sys.argv[1]
 arquivo_csv1 = sys.argv[2]
-arquivo_csv2 = sys.argv[3]
-arquivo_csv3 = sys.argv[4]
+#arquivo_csv2 = sys.argv[3]
+#arquivo_csv3 = sys.argv[4]
 
-df1=pd.read_csv(arquivo_csv)
-df2=pd.read_csv(arquivo_csv1, index_col=0)
-df3=pd.read_csv(arquivo_csv2, index_col=0)
-df4=pd.read_csv(arquivo_csv3)
+df1=pd.read_csv(arquivo_csv, index_col = 0)
+df2=pd.read_csv(arquivo_csv1)
+#df3=pd.read_csv(arquivo_csv2, index_col=0)
+#df4=pd.read_csv(arquivo_csv3)
 print(df1)
 print(df2)
-print(df3)
-print(df4)
+#print(df3)
+#print(df4)
 
 
 #df1 = df1[df1['label_name'] != 'Scan-1']
@@ -31,7 +31,7 @@ print(df4)
 
 #exit()
 
-df_combined = pd.concat([df1, df2, df3, df4], ignore_index=True)
+df_combined = pd.concat([df1, df2], ignore_index=True)
 print(df_combined)
 
 #df_combined.rename(columns={'label': 'label_name'}, inplace=True)
@@ -40,4 +40,4 @@ print(df_combined)
 #df_combined['label'] = 1
 #print(df_combined)
 
-df_combined.to_csv("tudo-junto-Tonet.csv")
+df_combined.to_csv("junteiTeste.csv")
